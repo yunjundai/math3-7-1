@@ -321,7 +321,7 @@
             isSubmitting = false; showView('student-result');
         }
 
-        function checkTeacherAuth() { if (document.getElementById('teacher-password').value === '1234') { showView('teacher-dashboard'); fetchStudentSubmissions(); } else { document.getElementById('auth-error').classList.remove('hidden'); } }
+        function checkTeacherAuth() { if (document.getElementById('teacher-password').value === '0000') { showView('teacher-dashboard'); fetchStudentSubmissions(); } else { document.getElementById('auth-error').classList.remove('hidden'); } }
 
         async function fetchStudentSubmissions() {
             if (!GOOGLE_SCRIPT_URL) { return; }
