@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>乘法與除法學習檢核工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:ital,wght@1,700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f8fafc; }
+        .math-span {
+            display: inline-flex;
+            align-items: center;
+            padding: 0 0.35rem;
+            margin: 0 0.125rem;
+            border-radius: 0.5rem;
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 700;
+            font-style: italic;
+            border: 1px solid #dbeafe;
+        }
+        @keyframes bounce-slow {
+            0%, 100% { transform: translateY(0) rotate(3deg); }
+            50% { transform: translateY(-8px) rotate(-3deg); }
+        }
+        .animate-bounce-slow { animation: bounce-slow 4s ease-in-out infinite; }
+        .view { display: none; }
+        .view.active { display: block; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .modal-overlay { transition: opacity 0.3s ease; }
+        .modal-content { transition: transform 0.3s ease; }
+    </style>
+</head>
+<body class="selection:bg-blue-100 selection:text-blue-900 min-h-screen">
+
+    <header class="w-full bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 md:px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3 cursor-pointer group" onclick="showView('landing')">
+                <div class="w-10 h-10 md:w-12 md:h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg rotate-3 group-hover:rotate-0 transition-all">
+                    <span class="font-black text-xl md:text-2xl">7</span>
+                </div>
+                <div>
+                    <div class="font-black text-gray-800 text-lg md:text-xl tracking-tight">數學小學堂</div>
+                    <div class="text-[9px] text-blue-500 font-bold uppercase tracking-widest opacity-60">Multiplication & Division</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 md:px-8 py-8" id="app-container">
+        
+        <section id="view-landing" class="view active">
+            <div class="flex flex-col items-center justify-center min-h-[70vh] text-center">
+                <div class="bg-blue-600 w-20 h-20 md:w-28 md:h-28 rounded-[2rem] shadow-2xl flex items-center justify-center text-white mb-8 animate-bounce-slow">
+                    <i data-lucide="calculator" class="w-10 h-10 md:w-14 md:h-14"></i>
+                </div>
+                <h1 class="text-4xl md:text-6xl font-black text-gray-800 mb-6 tracking-tight px-4">乘法與除法練習</h1>
+                <p class="text-gray-400 text-lg md:text-xl mb-12 max-w-md px-6">活動 1：乘與除的關係</p>
+                <div class="flex flex-col sm:flex-row gap-4 w-full max-w-sm px-6">
+                    <button onclick="showView('student-login')" class="flex-1 bg-blue-600 text-white px-8 py-4 rounded-2xl font-black text-xl hover:bg-blue-700 shadow-xl shadow-blue-100 transition-all active:scale-95">我是學生</button>
+                    <button onclick="showView('teacher-auth')" class="flex-1 bg-white text-gray-700 border-2 border-gray-100 px-8 py-4 rounded-2xl font-bold text-lg hover:border-blue-200 hover:text-blue-600 transition-all active:scale-95">教師端</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Student Login -->
+        <section id="view-student-login" class="view">
+            <div class="max-w-md mx-auto py-12">
+                <div class="bg-white rounded-[2.5rem] shadow-2xl border border-gray-50 p-8 md:p-10">
+                    <h2 class="text-3xl font-black mb-8 text-center text-gray-800">開始測驗</h2>
+                    <div class="mb-8">
+                        <label class="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 block pl-2">請輸入您的姓名</label>
+                        <input type="text" id="student-name-input" placeholder="例如：王小明" class="w-full px-6 py-5 rounded-2xl border-2 border-gray-50 bg-gray-50 focus:bg-white focus:border-blue-500 outline-none transition-all text-xl font-bold text-center">
+                    </div>
+                    <p id="login-error" class="text-red-500 text-sm mb-8 text-center font-bold px-4 py-3 bg-red-50 rounded-xl hidden"></p>
+                    <div class="flex flex-col gap-3">
+                        <button onclick="startQuiz()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-xl shadow-lg shadow-blue-100 active:scale-95 transition-all">進入測驗空間</button>
+                        <button onclick="showView('landing')" class="w-full text-gray-400 font-bold py-2 hover:text-gray-600 transition-colors">返回首頁</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quiz View -->
+        <section id="view-student-quiz" class="view">
+            <div class="max-w-3xl mx-auto">
+                <div class="mb-8 md:mb-12">
+                    <div class="flex justify-between items-end mb-4">
+                        <div class="flex flex-col">
+                            <span id="quiz-q-id" class="text-blue-600 font-black text-3xl italic leading-none">Q01</span>
+                            <span id="quiz-question-title" class="text-xs font-bold text-gray-300 uppercase tracking-[0.2em] mt-1">單元練習</span>
+                        </div>
+                        <span id="quiz-progress-text" class="text-gray-400 font-bold text-sm bg-gray-100 px-3 py-1 rounded-full">1 / 5</span>
+                    </div>
+                    <div class="h-3 bg-gray-100 rounded-full overflow-hidden">
+                        <div id="quiz-progress-bar" class="h-full bg-blue-600 transition-all duration-1000 ease-in-out" style="width: 20%"></div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-[2.5rem] shadow-2xl border border-gray-50 p-8 md:p-12 mb-8 relative overflow-hidden">
+                    <div id="quiz-content" class="text-2xl md:text-3xl font-bold text-gray-800 leading-relaxed mb-10"></div>
+                    <!-- 圖片容器，支援 SVG 或 URL -->
+                    <div id="quiz-image-container" class="rounded-3xl overflow-hidden mb-10 border border-gray-100 shadow-inner p-4 bg-slate-50 flex justify-center hidden">
+                        <!-- 這裡是動態插入圖片或 SVG 的位置 -->
+                    </div>
+                    <div id="quiz-options" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                </div>
+                <div id="submitting-indicator" class="flex items-center justify-center gap-3 text-blue-600 font-bold py-6 hidden">
+                    <div class="loader"></div> <span>正在同步資料至雲端...</span>
+                </div>
+                <div id="quiz-hint-box" class="flex items-start gap-4 p-6 bg-amber-50 rounded-3xl border border-amber-100 text-amber-800 shadow-sm transition-all hover:shadow-md">
+                    <div class="p-2 bg-amber-200 rounded-xl text-amber-700"><i data-lucide="lightbulb" size="20"></i></div>
+                    <div class="text-sm md:text-base leading-relaxed"><span class="font-black block mb-1 uppercase tracking-tighter text-amber-600 text-xs">Teacher's Hint</span><span id="quiz-hint"></span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Result View -->
+        <section id="view-student-result" class="view">
+            <div class="max-w-md mx-auto py-8 text-center">
+                <div class="bg-white rounded-[3rem] shadow-2xl border border-gray-50 p-10 md:p-12">
+                    <div class="mb-8 inline-flex p-8 bg-green-500 rounded-[2rem] text-white shadow-2xl shadow-green-200"><i data-lucide="party-popper" size="48"></i></div>
+                    <h2 class="text-4xl font-black text-gray-800 mb-4">挑戰成功！</h2>
+                    <p class="text-gray-400 font-medium mb-10">你的作答紀錄已經安全存檔</p>
+                    <div class="bg-gray-50 rounded-[2.5rem] p-10 mb-10 border border-gray-100">
+                        <div class="text-blue-500 text-xs font-black uppercase tracking-widest mb-4">Final Score</div>
+                        <div id="final-score" class="text-8xl font-black text-gray-800 leading-none">100</div>
+                    </div>
+                    <button onclick="showView('landing')" class="w-full py-5 text-xl bg-blue-600 text-white rounded-2xl font-black shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">返回首頁</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Teacher Auth -->
+        <section id="view-teacher-auth" class="view">
+            <div class="max-w-md mx-auto py-12">
+                <div class="bg-white rounded-[2.5rem] shadow-2xl p-10">
+                    <div class="flex justify-center mb-10 text-blue-600"><i data-lucide="shield-check" size="64"></i></div>
+                    <h2 class="text-3xl font-black mb-8 text-center text-gray-800">身分驗證</h2>
+                    <input type="password" id="teacher-password" placeholder="密碼 1234" class="w-full px-6 py-5 rounded-2xl border-2 border-gray-50 bg-gray-50 focus:bg-white focus:border-blue-500 outline-none transition-all text-center text-3xl tracking-[1.5rem] font-black mb-6">
+                    <p id="auth-error" class="text-red-500 text-sm mb-8 text-center font-bold px-4 py-2 bg-red-50 rounded-xl hidden">密碼錯誤</p>
+                    <div class="flex gap-4">
+                        <button onclick="showView('landing')" class="flex-1 bg-gray-50 text-gray-500 py-4 rounded-2xl font-bold">取消</button>
+                        <button onclick="checkTeacherAuth()" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg shadow-blue-100">登入</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Teacher Dashboard -->
+        <section id="view-teacher-dashboard" class="view">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-12 gap-6">
+                <div>
+                    <h1 class="text-4xl font-black text-gray-800 flex items-center gap-3"><span class="p-2 bg-blue-600 rounded-xl text-white"><i data-lucide="bar-chart-3"></i></span> 教師管理後台</h1>
+                    <p class="text-gray-400 font-medium mt-2">點擊各題統計卡片可<span class="text-blue-500 font-bold">放大檢視題目內容</span></p>
+                </div>
+                <div class="flex flex-wrap gap-3 w-full lg:w-auto">
+                    <button onclick="fetchStudentSubmissions()" id="btn-refresh" class="flex-1 lg:flex-none bg-blue-600 text-white px-6 py-3 rounded-2xl font-black flex items-center justify-center gap-2 shadow-lg shadow-blue-100 transition-all"><i data-lucide="refresh-cw" size="18"></i> 重新整理</button>
+                    <button onclick="clearAllData()" id="btn-clear" class="flex-1 lg:flex-none bg-red-50 text-red-600 px-6 py-3 rounded-2xl font-bold border-2 border-red-100 hover:bg-red-100 transition-all flex items-center justify-center gap-2"><i data-lucide="trash-2" size="18"></i> 清除全部資料</button>
+                    <button onclick="showView('landing')" class="flex-1 lg:flex-none bg-white text-gray-400 border-2 border-gray-50 px-6 py-3 rounded-2xl font-bold">登出</button>
+                </div>
+            </div>
+            <div id="stats-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-10"></div>
+            <div class="bg-white rounded-[2rem] shadow-2xl border border-gray-50 overflow-hidden">
+                <div class="p-8 border-b border-gray-50 bg-gray-50/30 flex justify-between items-center">
+                    <h3 class="text-xl font-black text-gray-700 flex items-center gap-2"><i data-lucide="layout-list" class="text-blue-500"></i> 全班作答紀錄</h3>
+                    <div id="fetch-loader" class="hidden flex items-center gap-2"><div class="loader"></div> <span class="text-xs font-bold text-blue-500 uppercase">Fetching...</span></div>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-8 py-5 font-black text-gray-400 text-xs uppercase tracking-widest min-w-[120px]">學生姓名</th>
+                                <th class="px-8 py-5 font-black text-gray-400 text-xs uppercase tracking-widest text-center">總分</th>
+                                <th class="px-8 py-5 font-black text-gray-400 text-xs uppercase tracking-widest min-w-[180px]">日期/時間</th>
+                                <th class="px-6 py-5 font-black text-gray-400 text-xs uppercase tracking-widest text-center">Q1</th>
+                                <th class="px-6 py-5 font-black text-gray-400 text-xs uppercase tracking-widest text-center">Q2</th>
+                                <th class="px-6 py-5 font-black text-gray-400 text-xs uppercase tracking-widest text-center">Q3</th>
+                                <th class="px-6 py-5 font-black text-gray-400 text-xs uppercase tracking-widest text-center">Q4</th>
+                                <th class="px-6 py-5 font-black text-gray-400 text-xs uppercase tracking-widest text-center">Q5</th>
+                            </tr>
+                        </thead>
+                        <tbody id="student-data-rows" class="divide-y divide-gray-50">
+                            <tr><td colspan="8" class="px-8 py-32 text-center text-gray-300 italic">點擊「重新整理」以讀取數據</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Question Modal -->
+    <div id="question-modal" class="modal-overlay fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none">
+        <div class="modal-content bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden scale-90">
+            <div class="p-8 md:p-12">
+                <div class="flex justify-between items-start mb-8">
+                    <div><span id="modal-q-id" class="text-blue-600 font-black text-sm uppercase tracking-widest">Question Details</span><h2 id="modal-q-title" class="text-3xl font-black text-gray-800 mt-1">題目名稱</h2></div>
+                    <button onclick="closeModal()" class="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600"><i data-lucide="x" size="24"></i></button>
+                </div>
+                <div class="bg-gray-50 rounded-3xl p-8 mb-8 border border-gray-100">
+                    <div id="modal-content" class="text-xl md:text-2xl font-bold text-gray-700 leading-relaxed mb-6"></div>
+                    <div id="modal-image-container" class="w-full flex justify-center mb-6 hidden"></div>
+                    <div id="modal-correct-ans" class="text-sm font-black text-green-600 flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full w-fit"><i data-lucide="check-circle" size="16"></i> 正確答案：<span></span></div>
+                </div>
+                <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div class="flex flex-col"><span id="modal-correct-rate" class="text-3xl font-black text-gray-800 leading-none">0%</span><span class="text-[10px] font-bold uppercase tracking-widest">Correct Rate</span></div>
+                    <button onclick="closeModal()" class="w-full md:w-auto bg-blue-600 text-white px-10 py-4 rounded-2xl font-black shadow-lg shadow-blue-100">關閉視窗</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 設定區 ---
+        // 請貼上您的 GAS Web App URL
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyF3ld0d2p4yNhqcLSgmjj-50FEo56NhSrqcL0EBxPzhOGqO4ISq_OCE1fFm3M7N82e/exec"; 
+        const SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/1uTerYat521BlLFFgdsuQ-gZ4WtaOsTVdCEt6SUGl-e8/edit?usp=sharing";
+
+        // 第一題的 SVG 托盤 (4x7)
+        const EGG_TART_SVG = `
+            <svg width="280" height="180" viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg">
+                <rect x="5" y="5" width="270" height="170" rx="10" fill="#cbd5e1" stroke="#94a3b8" stroke-width="2" />
+                ${Array.from({ length: 4 }).map((_, row) => 
+                    Array.from({ length: 7 }).map((_, col) => `
+                        <circle cx="${35 + col * 35}" cy="${35 + row * 35}" r="12" fill="#fbbf24" stroke="#d97706" stroke-width="1.5" />
+                        <circle cx="${35 + col * 35}" cy="${35 + row * 35}" r="8" fill="#fef3c7" opacity="0.6" />
+                    `).join('')
+                ).join('')}
+            </svg>
+        `;
+
+        const QUESTIONS = [
+            { id: 1, title: '蛋塔排排看', content: '麵包店老闆烤了一盤蛋塔。一共有幾個蛋塔？', options: ['11 個', '24 個', '28 個', '32 個'], correctAnswer: '28 個', svg: EGG_TART_SVG, hint: '直的一排有 4 個，橫的一排有 7 個，可以用 $4 \\times 7$ 來計算喔。' },
+            { id: 2, title: '乘除的關係', content: '已知 $8 \\times 9 = 72$，那麼 $72 \\div 8$ 等於多少？', options: ['8', '9', '72', '1'], correctAnswer: '9', hint: '被乘數、乘數與積的關係：積 $\\div$ 其中一個數 $=$ 另一個數。' },
+            { id: 3, title: '蠟筆盒裝', content: '一盒蠟筆有 5 枝，3 盒共有 15 枝。算式 $15 \\div 3 = 5$ 在這裡代表什麼意思？', options: ['每盒 15 枝，共有 3 盒', '共有 15 枝，每 3 枝裝一盒', '共有 15 枝，平分裝成 3 盒，每盒有 5 枝', '共有 5 枝，平分裝成 3 盒'], correctAnswer: '共有 15 枝，平分裝成 3 盒，每盒有 5 枝', hint: '除數 3 代表分成的盒數，商 5 代表每一盒的數量。' },
+            { id: 4, title: '青蛙跳跳跳', content: '青蛙一次跳 3 格，如果牠最後跳到了第 12 格，請問牠一共跳了幾次？', options: ['3 次', '4 次', '9 次', '12 次'], correctAnswer: '4 次', hint: '可以用算式 $3 \\times \\text{次數} = 12$ 或 $12 \\div 3 = \\text{次數}$ 來思考。' },
+            { id: 5, title: '算式找朋友', content: '已知 $56 \\div 7 = 8$，下列哪一個算式也是正確的？', options: ['$56 \\times 7 = 8$', '$7 \\times 8 = 56$', '$8 \\div 56 = 7$', '$56 + 7 = 8$'], correctAnswer: '$7 \\times 8 = 56$', hint: '除法的逆運算是乘法，除數 $\\times$ 商 $=$ 被除數。' }
+        ];
+
+        let studentName = "", currentQuestionIdx = 0, answers = [], startTime = null, isSubmitting = false, globalSubmissions = [];
+
+        window.onload = () => { lucide.createIcons(); initTeacherDashboard(); };
+
+        function formatMath(text) {
+            if (!text) return "";
+            return text.split('$').map((part, index) => index % 2 === 1 ? `<span class="math-span">${part.replace(/\\times/g, ' × ').replace(/\\div/g, ' ÷ ').replace(/\\text\{(.*?)\}/g, '$1').trim()}</span>` : part).join('');
+        }
+
+        function showView(viewId) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-' + viewId).classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function startQuiz() {
+            const input = document.getElementById('student-name-input');
+            if (!input.value.trim()) {
+                const err = document.getElementById('login-error');
+                err.innerText = "請輸入姓名以開始練習";
+                err.classList.remove('hidden');
+                return;
+            }
+            studentName = input.value.trim();
+            currentQuestionIdx = 0; answers = []; startTime = Date.now();
+            renderQuiz(); showView('student-quiz');
+        }
+
+        function renderQuiz() {
+            const q = QUESTIONS[currentQuestionIdx], progress = ((currentQuestionIdx + 1) / QUESTIONS.length) * 100;
+            document.getElementById('quiz-q-id').innerText = `Q0${q.id}`;
+            document.getElementById('quiz-progress-text').innerText = `${currentQuestionIdx + 1} / ${QUESTIONS.length}`;
+            document.getElementById('quiz-progress-bar').style.width = `${progress}%`;
+            document.getElementById('quiz-question-title').innerText = q.title;
+            document.getElementById('quiz-content').innerHTML = formatMath(q.content);
+            document.getElementById('quiz-hint').innerHTML = formatMath(q.hint);
+            
+            const imgContainer = document.getElementById('quiz-image-container');
+            imgContainer.innerHTML = "";
+            if (q.svg) {
+                imgContainer.innerHTML = q.svg;
+                imgContainer.classList.remove('hidden');
+            } else if (q.imageUrl) {
+                imgContainer.innerHTML = `<img src="${q.imageUrl}" alt="示意圖" class="w-full h-auto max-h-72 object-cover">`;
+                imgContainer.classList.remove('hidden');
+            } else {
+                imgContainer.classList.add('hidden');
+            }
+
+            const optionsBox = document.getElementById('quiz-options');
+            optionsBox.innerHTML = "";
+            q.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "group relative w-full text-left px-8 py-6 rounded-3xl border-2 border-gray-100 bg-white hover:border-blue-500 hover:bg-blue-50 transition-all duration-300 shadow-sm";
+                btn.innerHTML = `<span class="text-xl font-bold text-gray-700 group-hover:text-blue-700">${formatMath(opt)}</span><span class="absolute right-6 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1"><i data-lucide="chevron-right" class="text-blue-500"></i></span>`;
+                btn.onclick = () => handleAnswer(opt);
+                optionsBox.appendChild(btn);
+            });
+            lucide.createIcons();
+        }
+
+        async function handleAnswer(option) {
+            if (isSubmitting) return;
+            const q = QUESTIONS[currentQuestionIdx];
+            answers.push({ id: q.id, isCorrect: option === q.correctAnswer });
+            if (currentQuestionIdx < QUESTIONS.length - 1) { currentQuestionIdx++; renderQuiz(); } else { await submitToSheet(); }
+        }
+
+        async function submitToSheet() {
+            isSubmitting = true; document.getElementById('submitting-indicator').classList.remove('hidden');
+            const score = answers.filter(a => a.isCorrect).length, duration = Math.floor((Date.now() - startTime) / 1000);
+            if (GOOGLE_SCRIPT_URL) {
+                const sheetData = { name: studentName, score: score * 20, duration: duration, time: new Date().toLocaleString(), q1: answers[0]?.isCorrect ? "O" : "X", q2: answers[1]?.isCorrect ? "O" : "X", q3: answers[2]?.isCorrect ? "O" : "X", q4: answers[3]?.isCorrect ? "O" : "X", q5: answers[4]?.isCorrect ? "O" : "X" };
+                try { await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(sheetData) }); } catch (e) { console.error(e); }
+            }
+            document.getElementById('final-score').innerText = score * 20;
+            isSubmitting = false; showView('student-result');
+        }
+
+        function checkTeacherAuth() { if (document.getElementById('teacher-password').value === '1234') { showView('teacher-dashboard'); fetchStudentSubmissions(); } else { document.getElementById('auth-error').classList.remove('hidden'); } }
+
+        async function fetchStudentSubmissions() {
+            if (!GOOGLE_SCRIPT_URL) { return; }
+            const loader = document.getElementById('fetch-loader'), tableBody = document.getElementById('student-data-rows'), btnRefresh = document.getElementById('btn-refresh');
+            loader.classList.remove('hidden'); btnRefresh.disabled = true;
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL);
+                const data = await response.json();
+                globalSubmissions = data; renderTable(data); renderStatsGrid(data);
+            } catch (e) {
+                console.error(e);
+                tableBody.innerHTML = '<tr><td colspan="8" class="px-8 py-32 text-center text-red-400 font-bold">資料抓取失敗！<br><span class="text-xs font-normal">請確認 GAS 已部署為「任何人」均可存取。</span></td></tr>';
+            } finally { loader.classList.add('hidden'); btnRefresh.disabled = false; }
+        }
+
+        async function clearAllData() {
+            if (!confirm("⚠️ 警告：這將會清除試算表中的所有學生作答紀錄。\n\n確定要清除嗎？此動作無法還原。")) return;
+            const btnClear = document.getElementById('btn-clear');
+            const loader = document.getElementById('fetch-loader');
+            btnClear.disabled = true; loader.classList.remove('hidden');
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'clearAll' })
+                });
+                setTimeout(() => { fetchStudentSubmissions(); alert("✅ 資料已清空。"); }, 1500);
+            } catch (e) { console.error(e); alert("❌ 清除失敗。"); } finally { btnClear.disabled = false; loader.classList.add('hidden'); }
+        }
+
+        function renderTable(data) {
+            const tableBody = document.getElementById('student-data-rows'); tableBody.innerHTML = "";
+            if (data.length === 0) { tableBody.innerHTML = '<tr><td colspan="8" class="px-8 py-32 text-center text-gray-300">目前尚無作答紀錄</td></tr>'; return; }
+            [...data].reverse().forEach(row => {
+                const tr = document.createElement('tr'); tr.className = "hover:bg-blue-50/20 transition-colors group";
+                tr.innerHTML = `<td class="px-8 py-5 font-black text-gray-700">${row.name}</td><td class="px-8 py-5 text-center"><span class="px-4 py-1 rounded-full text-sm font-black ${row.score >= 80 ? 'bg-green-100 text-green-700' : (row.score >= 60 ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700')}">${row.score}</span></td><td class="px-8 py-5 text-gray-400 text-xs font-bold font-mono">${row.time}</td>${[1,2,3,4,5].map(i => `<td class="px-6 py-5 text-center">${row['q'+i] === 'O' ? '<i data-lucide="check-circle-2" class="text-green-500 mx-auto" size="20"></i>' : '<i data-lucide="x-circle" class="text-red-300 mx-auto" size="20"></i>'}</td>`).join('')}`;
+                tableBody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        function renderStatsGrid(data) {
+            const grid = document.getElementById('stats-grid'); grid.innerHTML = "";
+            for (let i = 1; i <= 5; i++) {
+                const correctCount = data.filter(row => row['q'+i] === 'O').length, rate = data.length > 0 ? Math.round((correctCount / data.length) * 100) : 0;
+                const colorClass = rate >= 80 ? 'bg-green-50 text-green-600 border-green-100' : (rate >= 60 ? 'bg-blue-50 text-blue-600 border-blue-100' : (data.length > 0 ? 'bg-red-50 text-red-600 border-red-100' : 'bg-gray-50 text-gray-400 border-gray-100'));
+                const progressColor = rate >= 80 ? 'bg-green-500' : (rate >= 60 ? 'bg-blue-500' : (data.length > 0 ? 'bg-red-500' : 'bg-gray-200'));
+                const card = document.createElement('div');
+                card.className = `${colorClass} border-2 p-6 rounded-[2rem] cursor-pointer hover:scale-[1.03] active:scale-95 transition-all shadow-sm flex flex-col items-center group relative overflow-hidden`;
+                card.onclick = () => openModal(i, rate);
+                card.innerHTML = `<span class="text-[10px] font-black uppercase tracking-widest opacity-50 mb-1">Question 0${i}</span><div class="text-4xl font-black mb-3">${rate}%</div><div class="w-full h-1.5 bg-white/50 rounded-full overflow-hidden"><div class="h-full ${progressColor} transition-all duration-1000" style="width: ${rate}%"></div></div><div class="mt-4 flex items-center gap-1 text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity"><i data-lucide="zoom-in" size="12"></i> 點選檢視內容</div>`;
+                grid.appendChild(card);
+            }
+            lucide.createIcons();
+        }
+
+        function openModal(qId, rate) {
+            const q = QUESTIONS.find(x => x.id === qId), modal = document.getElementById('question-modal'), content = document.getElementById('modal-content'), imgContainer = document.getElementById('modal-image-container');
+            document.getElementById('modal-q-id').innerText = `Question Analysis Q0${q.id}`; document.getElementById('modal-q-title').innerText = q.title;
+            content.innerHTML = formatMath(q.content); document.querySelector('#modal-correct-ans span').innerText = q.correctAnswer;
+            document.getElementById('modal-correct-rate').innerText = `${rate}%`;
+            
+            imgContainer.innerHTML = "";
+            if (q.svg) {
+                imgContainer.innerHTML = q.svg;
+                imgContainer.classList.remove('hidden');
+            } else if (q.imageUrl) {
+                imgContainer.innerHTML = `<img src="${q.imageUrl}" class="w-full h-auto rounded-2xl shadow-sm">`;
+                imgContainer.classList.remove('hidden');
+            } else { imgContainer.classList.add('hidden'); }
+
+            modal.classList.remove('pointer-events-none', 'opacity-0'); modal.querySelector('.modal-content').classList.remove('scale-90'); modal.querySelector('.modal-content').classList.add('scale-100'); lucide.createIcons();
+        }
+
+        function closeModal() { const modal = document.getElementById('question-modal'); modal.classList.add('opacity-0', 'pointer-events-none'); modal.querySelector('.modal-content').classList.add('scale-90'); modal.querySelector('.modal-content').classList.remove('scale-100'); }
+
+        function initTeacherDashboard() {
+            const grid = document.getElementById('stats-grid'); grid.innerHTML = "";
+            for (let i = 1; i <= 5; i++) { grid.innerHTML += `<div class="bg-gray-50 border-2 border-dashed border-gray-100 p-8 rounded-[2rem] flex flex-col items-center justify-center text-gray-200"><span class="text-xs font-bold">Q0${i}</span><i data-lucide="bar-chart-2" class="mt-2 opacity-50"></i></div>`; }
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
